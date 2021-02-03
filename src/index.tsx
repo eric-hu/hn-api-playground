@@ -1,14 +1,37 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React, { useEffect, useState } from "react";
+import ReactDOM from "react-dom";
+import "./index.css";
+import reportWebVitals from "./reportWebVitals";
+
+declare global {
+  interface Window {
+    jsonResponse: unknown;
+  }
+}
+
+const fetchTopStories = () => {
+  return fetch(
+    "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
+  ).then((response) => response.json());
+};
+
+const Foo = () => {
+  const [result, setResult] = useState<unknown>();
+  useEffect(() => {
+    fetchTopStories().then((jsonResponse) => {
+      window.jsonResponse = jsonResponse;
+      setResult(jsonResponse.toString());
+    });
+  });
+
+  return <div>{result as any}</div>;
+};
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Foo />
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
 
 // If you want to start measuring performance in your app, pass a function
