@@ -13,6 +13,8 @@ interface Story {
   by: string;
   descendants: number;
   id: number;
+  /** The number of child comments. Count may not match what's visible on
+   * website. Includes at least deleted comments. */
   kids: number[];
   score: number;
   time: number;
@@ -27,6 +29,8 @@ const fetchItem = (id: number): Promise<Story> => {
   ).then((response) => response.json());
 };
 
+/** Returns a promise that resolves the top 500 story ids, matching the HN
+ * front page ordering (I think). Webpage paginates by 30 stories, so this is about 16-17 pages.*/
 const fetchTopStoryIDs = (): Promise<number[]> => {
   return fetch(
     "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
@@ -41,16 +45,44 @@ const Foo = () => {
         window.jsonResponse = jsonResponse;
         return jsonResponse;
       })
-      .then((topStoryIds: number[]) => {
-        return fetchItem(topStoryIds[0]);
-      })
-      .then((topStory: unknown) => {
-        console.log(topStory);
-        setResult((JSON.stringify(topStory, null, 2)));
+      /** Show just one story */
+      // .then((topStoryIds: number[]) => fetchItem(topStoryIds[0]))
+      // .then((topStory: unknown) => {
+      //   // @ts-ignore
+      //   topStory.url = `<a href=${topStory.url}>${topStory.url}</a>`;
+      //   setResult(
+      //     JSON.stringify(
+      //       topStory,
+      //       ["by", "id", "score", "title", "url", "descendants", "time"],
+      //       2
+      //     )
+      //   );
+
+      /** Show top N stories */
+      .then((topStoryIds: number[]) =>
+        Promise.all(topStoryIds.slice(0, 30).map(fetchItem))
+      )
+      .then((topStories: unknown) => {
+        // @ts-ignore
+        topStories = topStories.map((topStory) => ({
+          ...topStory,
+          url: `<a href=${topStory.url}>${topStory.url}</a>`,
+        }));
+        setResult(
+          JSON.stringify(
+            topStories,
+            ["by", "id", "score", "title", "url", "descendants", "time"],
+            2
+          )
+        );
       });
   });
 
-  return <pre>{result as any}</pre>;
+  // return <pre>{result as any}</pre>;
+  /** React will sanitize HTML unless it's called using dangerouslySetInnerHTML */
+  return React.createElement("pre", {
+    dangerouslySetInnerHTML: { __html: result as any },
+  });
 };
 
 ReactDOM.render(
