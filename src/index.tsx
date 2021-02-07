@@ -9,7 +9,25 @@ declare global {
   }
 }
 
-const fetchTopStories = () => {
+interface Story {
+  by: string;
+  descendants: number;
+  id: number;
+  kids: number[];
+  score: number;
+  time: number;
+  title: string;
+  type: string;
+  url: string;
+}
+
+const fetchItem = (id: number): Promise<Story> => {
+  return fetch(
+    `https://hacker-news.firebaseio.com/v0/item/${id}.json?print=pretty`
+  ).then((response) => response.json());
+};
+
+const fetchTopStoryIDs = (): Promise<number[]> => {
   return fetch(
     "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
   ).then((response) => response.json());
@@ -18,13 +36,21 @@ const fetchTopStories = () => {
 const Foo = () => {
   const [result, setResult] = useState<unknown>();
   useEffect(() => {
-    fetchTopStories().then((jsonResponse) => {
-      window.jsonResponse = jsonResponse;
-      setResult(jsonResponse.toString());
-    });
+    fetchTopStoryIDs()
+      .then((jsonResponse) => {
+        window.jsonResponse = jsonResponse;
+        return jsonResponse;
+      })
+      .then((topStoryIds: number[]) => {
+        return fetchItem(topStoryIds[0]);
+      })
+      .then((topStory: unknown) => {
+        console.log(topStory);
+        setResult((JSON.stringify(topStory, null, 2)));
+      });
   });
 
-  return <div>{result as any}</div>;
+  return <pre>{result as any}</pre>;
 };
 
 ReactDOM.render(
