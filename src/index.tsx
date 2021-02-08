@@ -20,6 +20,20 @@ interface Story {
   time: number;
   title: string;
   type: string;
+  /** url is optional if text is provided */
+  url?: string;
+  /** text is optional if url is provided */
+  text?: string;
+}
+
+/** currently unused, but comes back in API responses */
+export interface Job {
+  by: string;
+  id: number;
+  score: number;
+  time: number;
+  title: string;
+  type: string;
   url: string;
 }
 
@@ -37,52 +51,60 @@ const fetchTopStoryIDs = (): Promise<number[]> => {
   ).then((response) => response.json());
 };
 
+const HNCommentThreadURL = (storyId: number) =>
+  `https://news.ycombinator.com/item?id=${storyId}`;
+const StoryComponent = ({ story, index }: { story: Story; index: number }) => {
+  return (
+    <div>
+      <div>
+        <span>{index + 1}. </span>
+        <a href={story.url}>{story.title}</a>
+      </div>
+      <div>
+        {story.score} points.{" "}
+        <a href={HNCommentThreadURL(story.id)}>
+          {story.descendants} total comments, {story.kids?.length} comment
+          threads.
+        </a>{" "}
+        <a href={"https://news.ycombinator.com/user?id=" + story.by}>
+          By {story.by}.
+        </a>{" "}
+        Time posted: {story.time}.
+      </div>
+      <div></div>
+    </div>
+  );
+};
+
 const Foo = () => {
-  const [result, setResult] = useState<unknown>();
-  useEffect(() => {
-    fetchTopStoryIDs()
-      .then((jsonResponse) => {
-        window.jsonResponse = jsonResponse;
-        return jsonResponse;
-      })
-      /** Show just one story */
-      // .then((topStoryIds: number[]) => fetchItem(topStoryIds[0]))
-      // .then((topStory: unknown) => {
-      //   // @ts-ignore
-      //   topStory.url = `<a href=${topStory.url}>${topStory.url}</a>`;
-      //   setResult(
-      //     JSON.stringify(
-      //       topStory,
-      //       ["by", "id", "score", "title", "url", "descendants", "time"],
-      //       2
-      //     )
-      //   );
+  const [result, setResult] = useState<Story[]>([]);
+  useEffect(
+    () => {
+      fetchTopStoryIDs()
+        .then((jsonResponse) => {
+          window.jsonResponse = jsonResponse;
+          return jsonResponse;
+        })
 
-      /** Show top N stories */
-      .then((topStoryIds: number[]) =>
-        Promise.all(topStoryIds.slice(0, 30).map(fetchItem))
-      )
-      .then((topStories: unknown) => {
-        // @ts-ignore
-        topStories = topStories.map((topStory) => ({
-          ...topStory,
-          url: `<a href=${topStory.url}>${topStory.url}</a>`,
-        }));
-        setResult(
-          JSON.stringify(
-            topStories,
-            ["by", "id", "score", "title", "url", "descendants", "time"],
-            2
-          )
-        );
-      });
-  });
+        .then((topStoryIds: number[]) =>
+          Promise.all(topStoryIds.slice(0, 30).map(fetchItem))
+        )
+        .then((topStories: Story[]) => {
+          console.log(topStories);
+          setResult(topStories);
+        });
+    },
+    // Force useEffect to fire only once; prevents an infinite loop with useState
+    []
+  );
 
-  // return <pre>{result as any}</pre>;
-  /** React will sanitize HTML unless it's called using dangerouslySetInnerHTML */
-  return React.createElement("pre", {
-    dangerouslySetInnerHTML: { __html: result as any },
-  });
+  return (
+    <div>
+      {result.map((topStory, index) => (
+        <StoryComponent story={topStory} key={index} index={index} />
+      ))}
+    </div>
+  );
 };
 
 ReactDOM.render(
