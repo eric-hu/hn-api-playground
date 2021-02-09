@@ -55,24 +55,22 @@ const HNCommentThreadURL = (storyId: number) =>
   `https://news.ycombinator.com/item?id=${storyId}`;
 const StoryComponent = ({ story, index }: { story: Story; index: number }) => {
   return (
-    <div>
-      <div>
-        <span>{index + 1}. </span>
-        <a href={story.url}>{story.title}</a>
+      <li>
+        <div>
+        {/* <span>{index + 1}. </span> */}
+      <a href={story.url}>{story.title}</a>
       </div>
-      <div>
-        {story.score} points.{" "}
-        <a href={HNCommentThreadURL(story.id)}>
-          {story.descendants} total comments, {story.kids?.length} comment
-          threads.
-        </a>{" "}
-        <a href={"https://news.ycombinator.com/user?id=" + story.by}>
-          By {story.by}.
-        </a>{" "}
-        Time posted: {story.time}.
-      </div>
-      <div></div>
-    </div>
+        <div>
+          {story.score} points.{" "}
+          <a href={HNCommentThreadURL(story.id)}>
+            {story.descendants} comments, {story.kids?.length} threads.
+          </a>{" "}
+          <a href={"https://news.ycombinator.com/user?id=" + story.by}>
+            By {story.by}.
+          </a>{" "}
+          Time posted: {story.time}.
+        </div>
+      </li>
   );
 };
 
@@ -99,11 +97,11 @@ const Foo = () => {
   );
 
   return (
-    <div>
+    <ol>
       {result.map((topStory, index) => (
         <StoryComponent story={topStory} key={index} index={index} />
       ))}
-    </div>
+    </ol>
   );
 };
 
