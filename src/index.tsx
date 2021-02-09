@@ -55,22 +55,21 @@ const HNCommentThreadURL = (storyId: number) =>
   `https://news.ycombinator.com/item?id=${storyId}`;
 const StoryComponent = ({ story, index }: { story: Story; index: number }) => {
   return (
-      <li>
-        <div>
-        {/* <span>{index + 1}. </span> */}
-      <a href={story.url}>{story.title}</a>
+    <li>
+      <div>
+        <a href={story.url}>{story.title}</a>
       </div>
-        <div>
-          {story.score} points.{" "}
-          <a href={HNCommentThreadURL(story.id)}>
-            {story.descendants} comments, {story.kids?.length} threads.
-          </a>{" "}
-          <a href={"https://news.ycombinator.com/user?id=" + story.by}>
-            By {story.by}.
-          </a>{" "}
-          Time posted: {story.time}.
-        </div>
-      </li>
+      <div>
+        {story.score} points.{" "}
+        <a href={HNCommentThreadURL(story.id)}>
+          {story.descendants} comments, {story.kids?.length} threads.
+        </a>{" "}
+        <a href={"https://news.ycombinator.com/user?id=" + story.by}>
+          By {story.by}.
+        </a>{" "}
+        Time posted: {story.time}.
+      </div>
+    </li>
   );
 };
 
