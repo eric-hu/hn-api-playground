@@ -5,9 +5,42 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* dark mode */
+  background-color: #181818 ;
+  color: #ffffff;
+  opacity: 60%;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+/* dark mode links */
+a {
+  text-decoration: none;
+  padding: 0px 2px;
+}
+
+a:link {
+  color: aqua;
+}
+
+a:visited {
+  color: magenta;
+}
+
+a:focus {
+  border-bottom: 1px solid;
+  background-color: darkgreen;
+}
+
+a:hover {
+  border-bottom: 1px solid;
+  background-color: darkolivegreen;
+}
+
+a:active {
+  background: darkgreen;
+  color: greenyellow;
 }
