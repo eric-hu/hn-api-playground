@@ -1,8 +1,8 @@
 {
   "files": {
-    "main.css": "/hn-api-playground/static/css/main.6dea0f05.chunk.css",
-    "main.js": "/hn-api-playground/static/js/main.9fdd9788.chunk.js",
-    "main.js.map": "/hn-api-playground/static/js/main.9fdd9788.chunk.js.map",
+    "main.css": "/hn-api-playground/static/css/main.90e4c67d.chunk.css",
+    "main.js": "/hn-api-playground/static/js/main.751a4941.chunk.js",
+    "main.js.map": "/hn-api-playground/static/js/main.751a4941.chunk.js.map",
     "runtime-main.js": "/hn-api-playground/static/js/runtime-main.ca05ff0b.js",
     "runtime-main.js.map": "/hn-api-playground/static/js/runtime-main.ca05ff0b.js.map",
     "static/js/2.3dcc6178.chunk.js": "/hn-api-playground/static/js/2.3dcc6178.chunk.js",
@@ -10,13 +10,13 @@
     "static/js/3.2e8f3956.chunk.js": "/hn-api-playground/static/js/3.2e8f3956.chunk.js",
     "static/js/3.2e8f3956.chunk.js.map": "/hn-api-playground/static/js/3.2e8f3956.chunk.js.map",
     "index.html": "/hn-api-playground/index.html",
-    "static/css/main.6dea0f05.chunk.css.map": "/hn-api-playground/static/css/main.6dea0f05.chunk.css.map",
+    "static/css/main.90e4c67d.chunk.css.map": "/hn-api-playground/static/css/main.90e4c67d.chunk.css.map",
     "static/js/2.3dcc6178.chunk.js.LICENSE.txt": "/hn-api-playground/static/js/2.3dcc6178.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.ca05ff0b.js",
     "static/js/2.3dcc6178.chunk.js",
-    "static/css/main.6dea0f05.chunk.css",
-    "static/js/main.9fdd9788.chunk.js"
+    "static/css/main.90e4c67d.chunk.css",
+    "static/js/main.751a4941.chunk.js"
   ]
 }
