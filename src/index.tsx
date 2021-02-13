@@ -54,7 +54,27 @@ const fetchTopStoryIDs = (): Promise<number[]> => {
 const HNCommentThreadURL = (storyId: number) =>
   `https://news.ycombinator.com/item?id=${storyId}`;
 
-const StoryComponent = ({ story }: { story: Story }) => {
+const StoryComponent = ({ storyID }: { storyID: number }) => {
+  const [story, setStory] = useState<Story>({
+    url: undefined,
+    title: "loading",
+    score: 0,
+    id: 0,
+    descendants: 0,
+    by: "loading",
+    kids: [],
+    time: 0,
+    type: "story",
+  });
+
+  useEffect(() => {
+    if (storyID !== null) {
+      fetchItem(storyID).then((story: Story) => setStory(story));
+    }
+  }, [storyID]);
+
+  if (storyID === null) return null;
+
   return (
     <li>
       <div>
@@ -75,16 +95,17 @@ const StoryComponent = ({ story }: { story: Story }) => {
 };
 
 const StoryList = () => {
-  const [result, setResult] = useState<Story[]>([]);
+  const [result, setResult] = useState<number[]>(Array(30).fill(null));
   useEffect(
     () => {
       fetchTopStoryIDs()
-        .then((topStoryIds: number[]) =>
-          Promise.all(topStoryIds.slice(0, 30).map(fetchItem))
-        )
-        .then((topStories: Story[]) => {
-          setResult(topStories);
-        });
+        // .then((topStoryIds: number[]) =>
+        //   Promise.all(topStoryIds.slice(0, 30).map(fetchItem))
+        // )
+        // .then((topStories: Story[]) => {
+        //   setResult(topStories);
+        // });
+        .then((topStoryIds: number[]) => setResult(topStoryIds.slice(0, 30)));
     },
     // Force useEffect to fire only once; prevents an infinite loop with useState
     []
@@ -92,8 +113,8 @@ const StoryList = () => {
 
   return (
     <ol>
-      {result.map((topStory, index) => (
-        <StoryComponent story={topStory} key={index} />
+      {result.map((topStoryID, index) => (
+        <StoryComponent storyID={topStoryID} key={index} />
       ))}
     </ol>
   );
