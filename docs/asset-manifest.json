@@ -1,6 +1,6 @@
 {
   "files": {
-    "main.css": "/hn-api-playground/static/css/main.1674b9cd.chunk.css",
+    "main.css": "/hn-api-playground/static/css/main.638926c8.chunk.css",
     "main.js": "/hn-api-playground/static/js/main.a5df5df9.chunk.js",
     "main.js.map": "/hn-api-playground/static/js/main.a5df5df9.chunk.js.map",
     "runtime-main.js": "/hn-api-playground/static/js/runtime-main.3a05436b.js",
@@ -10,13 +10,13 @@
     "static/js/3.0391bc82.chunk.js": "/hn-api-playground/static/js/3.0391bc82.chunk.js",
     "static/js/3.0391bc82.chunk.js.map": "/hn-api-playground/static/js/3.0391bc82.chunk.js.map",
     "index.html": "/hn-api-playground/index.html",
-    "static/css/main.1674b9cd.chunk.css.map": "/hn-api-playground/static/css/main.1674b9cd.chunk.css.map",
+    "static/css/main.638926c8.chunk.css.map": "/hn-api-playground/static/css/main.638926c8.chunk.css.map",
     "static/js/2.04e9e1cc.chunk.js.LICENSE.txt": "/hn-api-playground/static/js/2.04e9e1cc.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.3a05436b.js",
     "static/js/2.04e9e1cc.chunk.js",
-    "static/css/main.1674b9cd.chunk.css",
+    "static/css/main.638926c8.chunk.css",
     "static/js/main.a5df5df9.chunk.js"
   ]
 }
