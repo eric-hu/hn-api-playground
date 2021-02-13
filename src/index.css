@@ -44,3 +44,12 @@ a:active {
   background: darkgreen;
   color: greenyellow;
 }
+
+li {
+ margin-bottom: 4px; 
+
+}
+
+li > div {
+  margin: 2px;
+}
