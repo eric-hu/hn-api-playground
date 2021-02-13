@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, StrictMode } from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
@@ -53,7 +53,8 @@ const fetchTopStoryIDs = (): Promise<number[]> => {
 
 const HNCommentThreadURL = (storyId: number) =>
   `https://news.ycombinator.com/item?id=${storyId}`;
-const StoryComponent = ({ story, index }: { story: Story; index: number }) => {
+
+const StoryComponent = ({ story }: { story: Story }) => {
   return (
     <li>
       <div>
@@ -73,21 +74,15 @@ const StoryComponent = ({ story, index }: { story: Story; index: number }) => {
   );
 };
 
-const Foo = () => {
+const StoryList = () => {
   const [result, setResult] = useState<Story[]>([]);
   useEffect(
     () => {
       fetchTopStoryIDs()
-        .then((jsonResponse) => {
-          window.jsonResponse = jsonResponse;
-          return jsonResponse;
-        })
-
         .then((topStoryIds: number[]) =>
           Promise.all(topStoryIds.slice(0, 30).map(fetchItem))
         )
         .then((topStories: Story[]) => {
-          console.log(topStories);
           setResult(topStories);
         });
     },
@@ -98,16 +93,16 @@ const Foo = () => {
   return (
     <ol>
       {result.map((topStory, index) => (
-        <StoryComponent story={topStory} key={index} index={index} />
+        <StoryComponent story={topStory} key={index} />
       ))}
     </ol>
   );
 };
 
 ReactDOM.render(
-  <React.StrictMode>
-    <Foo />
-  </React.StrictMode>,
+  <StrictMode>
+    <StoryList />
+  </StrictMode>,
   document.getElementById("root")
 );
 
