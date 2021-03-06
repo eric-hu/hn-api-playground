@@ -1,0 +1,33 @@
+name: Manual build workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Merge master into publish
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git checkout publish
+        git merge master
+    - name: yarn install
+      uses: borales/actions-yarn@v2.0.0
+      with:
+        cmd: install # will run `yarn install` command
+    - name: yarn build
+      uses: borales/actions-yarn@v2.0.0
+      with:
+        cmd: build # will run `yarn build` command
+    - name: Commit changes
+      run: |
+        git add .
+        git commit -m "Create new build"
+        git push
