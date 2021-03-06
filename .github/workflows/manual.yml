@@ -27,7 +27,6 @@ jobs:
       with:
         cmd: build # will run `yarn build` command
     - name: Commit changes
-      uses: actions/checkout@v2
       run: |
         git add .
         git commit -m "Create new build"
