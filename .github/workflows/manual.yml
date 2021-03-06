@@ -16,10 +16,11 @@ jobs:
     - uses: borales/actions-yarn@v2.0.0
       with:
         cmd: build # will run `yarn build` command
-    - name: Push to built branch
-      uses: Automattic/action-commit-to-branch@master
+    - name: Commit changes
+      uses: EndBug/add-and-commit@v7
       with:
-        branch: 'publish'
-        commit_message: 'Build master'
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Required
+        author_name: Builder bot
+        author_email: mail@example.com
+        message: 'Build latest master'
+        add: '.'
+        branch: publish
