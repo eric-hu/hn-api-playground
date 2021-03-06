@@ -8,5 +8,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Send greeting
-      run: echo "Hello ${{ github.event.inputs.name }}"
+    
+    - uses: borales/actions-yarn@v2.0.0
+      with:
+        cmd: install # will run `yarn install` command
+    - uses: borales/actions-yarn@v2.0.0
+      with:
+        cmd: build # will run `yarn build` command
+    - name: Push to built branch
+      uses: Automattic/action-commit-to-branch@master
+      with:
+        branch: 'publish'
+        commit_message: 'Build master'
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Required
