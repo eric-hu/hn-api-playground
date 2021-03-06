@@ -1,0 +1,12 @@
+name: Manual build workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  greet:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Send greeting
+      run: echo "Hello ${{ github.event.inputs.name }}"
