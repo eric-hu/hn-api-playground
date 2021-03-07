@@ -1,7 +1,9 @@
-name: Manual build workflow
+name: Automatic Build and Publish
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - master
 
 jobs:
   build:
