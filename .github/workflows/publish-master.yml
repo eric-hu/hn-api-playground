@@ -1,4 +1,4 @@
-name: Manual build workflow
+name: Automatic Build and Publish
 
 on:
   push:
