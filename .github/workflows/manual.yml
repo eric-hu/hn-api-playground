@@ -1,9 +1,7 @@
 name: Manual build workflow
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   build:
