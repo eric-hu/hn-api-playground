@@ -75,6 +75,12 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
 
   if (storyID === null) return null;
 
+  /** Compute the story time.
+   * - HN API gives the time as UNIX Epoch, which is in seconds, UTC.
+   * - Ecmascript epoch time is in milliseconds, UTC.
+   */
+  const postTime = new Date(story.time * 1000).toLocaleTimeString();
+
   return (
     <li>
       <div>
@@ -88,7 +94,7 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
         <a href={"https://news.ycombinator.com/user?id=" + story.by}>
           By {story.by}.
         </a>{" "}
-        Time posted: {story.time}.
+        Time posted: {postTime}.
       </div>
     </li>
   );
