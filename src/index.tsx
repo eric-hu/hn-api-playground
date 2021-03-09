@@ -81,6 +81,13 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
    */
   const postTime = new Date(story.time * 1000).toLocaleTimeString();
 
+  /** Transform the story points so higher scoring stories are visually
+   * distinct. Try to use up all the available horizontal space (on mobile).
+   * Logarithm based normalization made all scores look too low. Perhaps that
+   * would be useful for a pretentious algorithm, AKA most stuff isn't worth
+   * reading. */
+  const pointNormalization = Math.floor(Math.sqrt(story.score));
+  const pointBar = new Array(pointNormalization).fill("=>").join("");
   return (
     <li>
       <div>
@@ -94,7 +101,7 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
         <a href={"https://news.ycombinator.com/user?id=" + story.by}>
           By {story.by}.
         </a>{" "}
-        Time posted: {postTime}.
+        Time posted: {postTime}.<pre>{pointBar}</pre>
       </div>
     </li>
   );
@@ -104,14 +111,9 @@ const StoryList = () => {
   const [result, setResult] = useState<number[]>(Array(30).fill(null));
   useEffect(
     () => {
-      fetchTopStoryIDs()
-        // .then((topStoryIds: number[]) =>
-        //   Promise.all(topStoryIds.slice(0, 30).map(fetchItem))
-        // )
-        // .then((topStories: Story[]) => {
-        //   setResult(topStories);
-        // });
-        .then((topStoryIds: number[]) => setResult(topStoryIds.slice(0, 30)));
+      fetchTopStoryIDs().then((topStoryIds: number[]) =>
+        setResult(topStoryIds.slice(0, 30))
+      );
     },
     // Force useEffect to fire only once; prevents an infinite loop with useState
     []
