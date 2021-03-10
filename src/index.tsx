@@ -19,7 +19,7 @@ interface Story {
   score: number;
   time: number;
   title: string;
-  type: string;
+  type: "story" | unknown;
   /** url is optional if text is provided */
   url?: string;
   /** text is optional if url is provided */
@@ -33,7 +33,7 @@ export interface Job {
   score: number;
   time: number;
   title: string;
-  type: string;
+  type: "job";
   url: string;
 }
 
@@ -80,6 +80,28 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
    * - Ecmascript epoch time is in milliseconds, UTC.
    */
   const postTime = new Date(story.time * 1000).toLocaleTimeString();
+
+  console.log(story.type);
+  if (story.type === "job")
+    return (
+      <li>
+        <pre>
+          +------------------------------------------------------------------+
+        </pre>
+        <div>
+          <a href={story.url}>{story.title}</a>
+        </div>
+        <div>
+          <a href={"https://news.ycombinator.com/user?id=" + story.by}>
+            By {story.by}.
+          </a>{" "}
+          Time posted: {postTime}.
+          <pre>
+            +------------------------------------------------------------------+
+          </pre>
+        </div>
+      </li>
+    );
 
   /** Transform the story points so higher scoring stories are visually
    * distinct. Try to use up all the available horizontal space (on mobile).
