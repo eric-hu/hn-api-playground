@@ -70,10 +70,20 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
   useEffect(() => {
     if (storyID !== null) {
       fetchItem(storyID).then((story: Story) => setStory(story));
+    } else {
+      setStory({
+        url: undefined,
+        title: "loading",
+        score: 0,
+        id: 0,
+        descendants: 0,
+        by: "loading",
+        kids: [],
+        time: 0,
+        type: "story",
+      });
     }
   }, [storyID]);
-
-  if (storyID === null) return null;
 
   /** Compute the story time.
    * - HN API gives the time as UNIX Epoch, which is in seconds, UTC.
@@ -105,11 +115,15 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
 
   /** Transform the story points so higher scoring stories are visually
    * distinct. Try to use up all the available horizontal space (on mobile).
+   * Ensure that normalization is at least 1 so the empty state renders with
+   * height.
+   *
    * Logarithm based normalization made all scores look too low. Perhaps that
    * would be useful for a pretentious algorithm, AKA most stuff isn't worth
    * reading. */
-  const pointNormalization = Math.floor(Math.sqrt(story.score));
+  const pointNormalization = Math.floor(Math.sqrt(story.score)) + 1;
   const pointBar = new Array(pointNormalization).fill("=>").join("");
+
   return (
     <li>
       <div>
@@ -130,23 +144,45 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
 };
 
 const StoryList = () => {
+  const [page, setPage] = useState<number>(1);
   const [result, setResult] = useState<number[]>(Array(30).fill(null));
   useEffect(
     () => {
       fetchTopStoryIDs().then((topStoryIds: number[]) =>
-        setResult(topStoryIds.slice(0, 30))
+        setResult(topStoryIds.slice((page - 1) * 30 + 1, page * 30))
       );
     },
     // Force useEffect to fire only once; prevents an infinite loop with useState
-    []
+    [page]
   );
 
   return (
-    <ol>
-      {result.map((topStoryID, index) => (
-        <StoryComponent storyID={topStoryID} key={index} />
-      ))}
-    </ol>
+    <>
+      <ol start={(page - 1) * 30 + 1}>
+        {result.map((topStoryID, index) => (
+          <StoryComponent storyID={topStoryID} key={index} />
+        ))}
+      </ol>
+      {page === 1 ? (
+        <button
+          onClick={() => {
+            setPage(2);
+            setResult(Array(30).fill(null));
+          }}
+        >
+          Page 2
+        </button>
+      ) : (
+        <button
+          onClick={() => {
+            setPage(1);
+            setResult(Array(30).fill(null));
+          }}
+        >
+          Page 1
+        </button>
+      )}
+    </>
   );
 };
 
