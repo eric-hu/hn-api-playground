@@ -1,4 +1,4 @@
-import { useEffect, useState, StrictMode } from "react";
+import { useEffect, useState, useReducer, StrictMode } from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
@@ -43,9 +43,11 @@ const fetchItem = (id: number): Promise<Story> => {
   ).then((response) => response.json());
 };
 
+type StoryID = number;
+
 /** Returns a promise that resolves the top 500 story ids, matching the HN
  * front page ordering (I think). Webpage paginates by 30 stories, so this is about 16-17 pages.*/
-const fetchTopStoryIDs = (): Promise<number[]> => {
+const fetchTopStoryIDs = (): Promise<StoryID[]> => {
   return fetch(
     "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
   ).then((response) => response.json());
@@ -54,37 +56,24 @@ const fetchTopStoryIDs = (): Promise<number[]> => {
 const HNCommentThreadURL = (storyId: number) =>
   `https://news.ycombinator.com/item?id=${storyId}`;
 
-const StoryComponent = ({ storyID }: { storyID: number }) => {
-  const [story, setStory] = useState<Story>({
-    url: undefined,
-    title: "loading",
-    score: 0,
-    id: 0,
-    descendants: 0,
-    by: "loading",
-    kids: [],
-    time: 0,
-    type: "story",
-  });
+const StoryLoading = () =>
+  <li>
+    <div>
+      <a >Loading ... </a>
+    </div>
+    <div>
+      0 points.{" "}
+      <a >
+        0 comments, 0 threads.
+      </a>{" "}
+      <a >
+        By ... .
+      </a>{" "}
+      Time posted: ... .<pre>=</pre>
+    </div>
+  </li>
 
-  useEffect(() => {
-    if (storyID !== null) {
-      fetchItem(storyID).then((story: Story) => setStory(story));
-    } else {
-      setStory({
-        url: undefined,
-        title: "loading",
-        score: 0,
-        id: 0,
-        descendants: 0,
-        by: "loading",
-        kids: [],
-        time: 0,
-        type: "story",
-      });
-    }
-  }, [storyID]);
-
+const StoryComponent = ({ story }: { story: Story }) => {
   /** Compute the story time.
    * - HN API gives the time as UNIX Epoch, which is in seconds, UTC.
    * - Ecmascript epoch time is in milliseconds, UTC.
@@ -143,31 +132,84 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
   );
 };
 
+type Action = { index: number, type: 'update', value: Story } | { type: 'reset' }
+
+const init = () => Array(30).fill(null)
+
+
+function reducer(state: Story[], action: Action): Story[] {
+  switch (action.type) {
+    case 'update':
+      const stateClone = [...state]
+      stateClone[action.index] = action.value
+      return stateClone
+    case 'reset':
+      return init();
+    default:
+      throw new Error();
+  }
+}
+
 const StoryList = () => {
   const [page, setPage] = useState<number>(1);
-  const [result, setResult] = useState<number[]>(Array(30).fill(null));
+  const [storyIDs, setStoryIDs] = useState<number[]>(Array(30).fill(null));
+  const [result, dispatch] = useReducer(reducer, init());
   useEffect(
     () => {
-      fetchTopStoryIDs().then((topStoryIds: number[]) =>
-        setResult(topStoryIds.slice((page - 1) * 30 + 1, page * 30))
-      );
+      fetchTopStoryIDs().then((topStoryIds: StoryID[]) =>
+        setStoryIDs(topStoryIds.slice((page - 1) * 30 + 1, page * 30))
+      )
     },
     // Force useEffect to fire only once; prevents an infinite loop with useState
     [page]
   );
 
+  useEffect(() => {
+    storyIDs.forEach((storyID, index) => {
+      if (storyID) {
+        fetchItem(storyID).then((story: Story) => {
+          dispatch({ type: 'update', index: index, value: story })
+        })
+      }
+    })
+  },
+    [storyIDs]
+  )
+
+  console.log(result);
+
+  // useEffect(() => {
+  //   if (story !== null) {
+  //     fetchItem(story).then((story: Story) => setStory(story));
+  //   } else {
+  //     setStory({
+  //       url: undefined,
+  //       title: "loading",
+  //       score: 0,
+  //       id: 0,
+  //       descendants: 0,
+  //       by: "loading",
+  //       kids: [],
+  //       time: 0,
+  //       type: "story",
+  //     });
+  //   }
+  // }, [story]);
   return (
     <>
       <ol start={(page - 1) * 30 + 1}>
-        {result.map((topStoryID, index) => (
-          <StoryComponent storyID={topStoryID} key={index} />
+        {result.map((story, index) => (
+          story ?
+            <StoryComponent story={story} key={index + story.title} />
+            :
+            <StoryLoading key={index + "loading"} />
         ))}
       </ol>
       {page === 1 ? (
         <button
           onClick={() => {
             setPage(2);
-            setResult(Array(30).fill(null));
+            dispatch({ type: 'reset' });
           }}
         >
           Page 2
@@ -176,12 +218,19 @@ const StoryList = () => {
         <button
           onClick={() => {
             setPage(1);
-            setResult(Array(30).fill(null));
+            dispatch({ type: 'reset' });
           }}
         >
           Page 1
         </button>
       )}
+      <div>
+        <div>Stats for this page:</div>
+        <div>Max votes: N/A</div>
+        <div>Min votes: N/A</div>
+        <div>Median votes: N/A</div>
+        <div>Average votes: N/A</div>
+      </div>
     </>
   );
 };
