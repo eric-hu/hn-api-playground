@@ -9,10 +9,12 @@ declare global {
   }
 }
 
+type StoryID = number;
+
 interface Story {
   by: string;
   descendants: number;
-  id: number;
+  id: StoryID;
   /** The number of child comments. Count may not match what's visible on
    * website. Includes at least deleted comments. */
   kids: number[];
@@ -29,7 +31,7 @@ interface Story {
 /** currently unused, but comes back in API responses */
 export interface Job {
   by: string;
-  id: number;
+  id: StoryID;
   score: number;
   time: number;
   title: string;
@@ -43,7 +45,6 @@ const fetchItem = (id: number): Promise<Story> => {
   ).then((response) => response.json());
 };
 
-type StoryID = number;
 
 /** Returns a promise that resolves the top 500 story ids, matching the HN
  * front page ordering (I think). Webpage paginates by 30 stories, so this is about 16-17 pages.*/
@@ -59,14 +60,14 @@ const HNCommentThreadURL = (storyId: number) =>
 const StoryLoading = () =>
   <li>
     <div>
-      <a >Loading ... </a>
+      <a href=".">Loading ... </a>
     </div>
     <div>
       0 points.{" "}
-      <a >
+      <a href=".">
         0 comments, 0 threads.
       </a>{" "}
-      <a >
+      <a href=".">
         By ... .
       </a>{" "}
       Time posted: ... .<pre>=</pre>
@@ -80,7 +81,6 @@ const StoryComponent = ({ story }: { story: Story }) => {
    */
   const postTime = new Date(story.time * 1000).toLocaleTimeString();
 
-  console.log(story.type);
   if (story.type === "job")
     return (
       <li>
@@ -134,17 +134,16 @@ const StoryComponent = ({ story }: { story: Story }) => {
 
 type Action = { index: number, type: 'update', value: Story } | { type: 'reset' }
 
-const init = () => Array(30).fill(null)
+const storiesInit = () => Array(30).fill(null)
 
-
-function reducer(state: Story[], action: Action): Story[] {
+function storiesReducer(state: Story[], action: Action): Story[] {
   switch (action.type) {
     case 'update':
       const stateClone = [...state]
       stateClone[action.index] = action.value
       return stateClone
     case 'reset':
-      return init();
+      return storiesInit();
     default:
       throw new Error();
   }
@@ -153,11 +152,11 @@ function reducer(state: Story[], action: Action): Story[] {
 const StoryList = () => {
   const [page, setPage] = useState<number>(1);
   const [storyIDs, setStoryIDs] = useState<number[]>(Array(30).fill(null));
-  const [result, dispatch] = useReducer(reducer, init());
+  const [stories, storiesDispatch] = useReducer(storiesReducer, storiesInit());
   useEffect(
     () => {
       fetchTopStoryIDs().then((topStoryIds: StoryID[]) =>
-        setStoryIDs(topStoryIds.slice((page - 1) * 30 + 1, page * 30))
+        setStoryIDs(topStoryIds.slice((page - 1) * 30, page * 30))
       )
     },
     // Force useEffect to fire only once; prevents an infinite loop with useState
@@ -168,7 +167,7 @@ const StoryList = () => {
     storyIDs.forEach((storyID, index) => {
       if (storyID) {
         fetchItem(storyID).then((story: Story) => {
-          dispatch({ type: 'update', index: index, value: story })
+          storiesDispatch({ type: 'update', index: index, value: story })
         })
       }
     })
@@ -176,29 +175,23 @@ const StoryList = () => {
     [storyIDs]
   )
 
-  console.log(result);
 
-  // useEffect(() => {
-  //   if (story !== null) {
-  //     fetchItem(story).then((story: Story) => setStory(story));
-  //   } else {
-  //     setStory({
-  //       url: undefined,
-  //       title: "loading",
-  //       score: 0,
-  //       id: 0,
-  //       descendants: 0,
-  //       by: "loading",
-  //       kids: [],
-  //       time: 0,
-  //       type: "story",
-  //     });
-  //   }
-  // }, [story]);
+  // This runs more often than it needs to, but it can be optimized later
+  const sortedStoryPoints = [...stories].sort((a, b) => {
+    if (a?.score === b?.score) return 0;
+    if (a?.score < b?.score) return -1;
+    return 1;
+  })
+
+  const storiesMaxVotes = sortedStoryPoints[29]?.score
+  const storiesMinVotes = sortedStoryPoints[0]?.score
+  const storiesMedianVotes = (sortedStoryPoints[14]?.score + sortedStoryPoints[15]?.score) / 2
+  const storiesAverageVotes = sortedStoryPoints.reduce<number>((accum, story) => accum + story?.score, 0) / 30
+
   return (
     <>
       <ol start={(page - 1) * 30 + 1}>
-        {result.map((story, index) => (
+        {stories.map((story, index) => (
           story ?
             <StoryComponent story={story} key={index + story.title} />
             :
@@ -209,7 +202,7 @@ const StoryList = () => {
         <button
           onClick={() => {
             setPage(2);
-            dispatch({ type: 'reset' });
+            storiesDispatch({ type: 'reset' });
           }}
         >
           Page 2
@@ -218,18 +211,18 @@ const StoryList = () => {
         <button
           onClick={() => {
             setPage(1);
-            dispatch({ type: 'reset' });
+            storiesDispatch({ type: 'reset' });
           }}
         >
           Page 1
         </button>
       )}
       <div>
-        <div>Stats for this page:</div>
-        <div>Max votes: N/A</div>
-        <div>Min votes: N/A</div>
-        <div>Median votes: N/A</div>
-        <div>Average votes: N/A</div>
+        <h3>Stats for this page:</h3>
+        <div>Max votes: {storiesMaxVotes}</div>
+        <div>Min votes: {storiesMinVotes}</div>
+        <div>Median votes: {storiesMedianVotes}</div>
+        <div>Average votes: {storiesAverageVotes}</div>
       </div>
     </>
   );
