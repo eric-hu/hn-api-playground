@@ -1,4 +1,4 @@
-import { useEffect, useState, StrictMode } from "react";
+import { useEffect, useState, useReducer, StrictMode } from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
@@ -9,10 +9,12 @@ declare global {
   }
 }
 
+type StoryID = number;
+
 interface Story {
   by: string;
   descendants: number;
-  id: number;
+  id: StoryID;
   /** The number of child comments. Count may not match what's visible on
    * website. Includes at least deleted comments. */
   kids: number[];
@@ -29,7 +31,7 @@ interface Story {
 /** currently unused, but comes back in API responses */
 export interface Job {
   by: string;
-  id: number;
+  id: StoryID;
   score: number;
   time: number;
   title: string;
@@ -43,9 +45,10 @@ const fetchItem = (id: number): Promise<Story> => {
   ).then((response) => response.json());
 };
 
+
 /** Returns a promise that resolves the top 500 story ids, matching the HN
  * front page ordering (I think). Webpage paginates by 30 stories, so this is about 16-17 pages.*/
-const fetchTopStoryIDs = (): Promise<number[]> => {
+const fetchTopStoryIDs = (): Promise<StoryID[]> => {
   return fetch(
     "https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty"
   ).then((response) => response.json());
@@ -54,44 +57,30 @@ const fetchTopStoryIDs = (): Promise<number[]> => {
 const HNCommentThreadURL = (storyId: number) =>
   `https://news.ycombinator.com/item?id=${storyId}`;
 
-const StoryComponent = ({ storyID }: { storyID: number }) => {
-  const [story, setStory] = useState<Story>({
-    url: undefined,
-    title: "loading",
-    score: 0,
-    id: 0,
-    descendants: 0,
-    by: "loading",
-    kids: [],
-    time: 0,
-    type: "story",
-  });
+const StoryLoading = () =>
+  <li>
+    <div>
+      <a href=".">Loading ... </a>
+    </div>
+    <div>
+      0 points.{" "}
+      <a href=".">
+        0 comments, 0 threads.
+      </a>{" "}
+      <a href=".">
+        By ... .
+      </a>{" "}
+      Time posted: ... .<pre>=</pre>
+    </div>
+  </li>
 
-  useEffect(() => {
-    if (storyID !== null) {
-      fetchItem(storyID).then((story: Story) => setStory(story));
-    } else {
-      setStory({
-        url: undefined,
-        title: "loading",
-        score: 0,
-        id: 0,
-        descendants: 0,
-        by: "loading",
-        kids: [],
-        time: 0,
-        type: "story",
-      });
-    }
-  }, [storyID]);
-
+const StoryComponent = ({ story }: { story: Story }) => {
   /** Compute the story time.
    * - HN API gives the time as UNIX Epoch, which is in seconds, UTC.
    * - Ecmascript epoch time is in milliseconds, UTC.
    */
   const postTime = new Date(story.time * 1000).toLocaleTimeString();
 
-  console.log(story.type);
   if (story.type === "job")
     return (
       <li>
@@ -143,31 +132,77 @@ const StoryComponent = ({ storyID }: { storyID: number }) => {
   );
 };
 
+type Action = { index: number, type: 'update', value: Story } | { type: 'reset' }
+
+const storiesInit = () => Array(30).fill(null)
+
+function storiesReducer(state: Story[], action: Action): Story[] {
+  switch (action.type) {
+    case 'update':
+      const stateClone = [...state]
+      stateClone[action.index] = action.value
+      return stateClone
+    case 'reset':
+      return storiesInit();
+    default:
+      throw new Error();
+  }
+}
+
 const StoryList = () => {
   const [page, setPage] = useState<number>(1);
-  const [result, setResult] = useState<number[]>(Array(30).fill(null));
+  const [storyIDs, setStoryIDs] = useState<number[]>(Array(30).fill(null));
+  const [stories, storiesDispatch] = useReducer(storiesReducer, storiesInit());
   useEffect(
     () => {
-      fetchTopStoryIDs().then((topStoryIds: number[]) =>
-        setResult(topStoryIds.slice((page - 1) * 30 + 1, page * 30))
-      );
+      fetchTopStoryIDs().then((topStoryIds: StoryID[]) =>
+        setStoryIDs(topStoryIds.slice((page - 1) * 30, page * 30))
+      )
     },
     // Force useEffect to fire only once; prevents an infinite loop with useState
     [page]
   );
 
+  useEffect(() => {
+    storyIDs.forEach((storyID, index) => {
+      if (storyID) {
+        fetchItem(storyID).then((story: Story) => {
+          storiesDispatch({ type: 'update', index: index, value: story })
+        })
+      }
+    })
+  },
+    [storyIDs]
+  )
+
+
+  // This runs more often than it needs to, but it can be optimized later
+  const sortedStoryPoints = [...stories].sort((a, b) => {
+    if (a?.score === b?.score) return 0;
+    if (a?.score < b?.score) return -1;
+    return 1;
+  })
+
+  const storiesMaxVotes = sortedStoryPoints[29]?.score
+  const storiesMinVotes = sortedStoryPoints[0]?.score
+  const storiesMedianVotes = (sortedStoryPoints[14]?.score + sortedStoryPoints[15]?.score) / 2
+  const storiesAverageVotes = sortedStoryPoints.reduce<number>((accum, story) => accum + story?.score, 0) / 30
+
   return (
     <>
       <ol start={(page - 1) * 30 + 1}>
-        {result.map((topStoryID, index) => (
-          <StoryComponent storyID={topStoryID} key={index} />
+        {stories.map((story, index) => (
+          story ?
+            <StoryComponent story={story} key={index + story.title} />
+            :
+            <StoryLoading key={index + "loading"} />
         ))}
       </ol>
       {page === 1 ? (
         <button
           onClick={() => {
             setPage(2);
-            setResult(Array(30).fill(null));
+            storiesDispatch({ type: 'reset' });
           }}
         >
           Page 2
@@ -176,12 +211,19 @@ const StoryList = () => {
         <button
           onClick={() => {
             setPage(1);
-            setResult(Array(30).fill(null));
+            storiesDispatch({ type: 'reset' });
           }}
         >
           Page 1
         </button>
       )}
+      <div>
+        <h3>Stats for this page:</h3>
+        <div>Max votes: {storiesMaxVotes}</div>
+        <div>Min votes: {storiesMinVotes}</div>
+        <div>Median votes: {storiesMedianVotes}</div>
+        <div>Average votes: {storiesAverageVotes}</div>
+      </div>
     </>
   );
 };
