@@ -84,14 +84,17 @@ const StoryComponent = ({ story }: { story: Story }) => {
    */
   const postTime = new Date(story.time * 1000).toLocaleTimeString();
 
-  if (story.type === "job")
+  if (story.type === "job") {
+    if (!story.url) {
+      story.url = "https://news.ycombinator.com/item?id=" + story.id
+    }
     return (
       <li>
         <pre>
           +------------------------------------------------------------------+
         </pre>
         <div>
-          <a href={"https://news.ycombinator.com/item?id=" + story.id}>{story.title}</a>
+          <a href={story.url}>{story.title}</a>
         </div>
         <div>
           <a href={"https://news.ycombinator.com/user?id=" + story.by}>
@@ -104,6 +107,7 @@ const StoryComponent = ({ story }: { story: Story }) => {
         </div>
       </li>
     );
+  }
 
   /** Transform the story points so higher scoring stories are visually
    * distinct. Try to use up all the available horizontal space (on mobile).
