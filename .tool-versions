@@ -1,1 +1,4 @@
-nodejs lts-iron
+# LTS alias not yet available on Github Actions
+# Hard-code for now
+# nodejs lts-iron
+nodejs 20.15.0
