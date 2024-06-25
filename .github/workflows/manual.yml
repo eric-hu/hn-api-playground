@@ -18,6 +18,7 @@ jobs:
           git config user.email github-actions@github.com
           git checkout publish
           git merge master
+      - run: corepack enable
       - name: setup Node with version from .tool-versions
         uses: actions/setup-node@v4
         with:
