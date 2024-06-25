@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Merge master into publish
@@ -20,12 +20,17 @@ jobs:
           git config user.email github-actions@github.com
           git checkout publish
           git merge master
+      - run: corepack enable
+      - name: setup Node with version from .tool-versions
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.tool-versions'
       - name: yarn install
-        uses: borales/actions-yarn@v2.0.0
+        uses: borales/actions-yarn@v4
         with:
           cmd: install # will run `yarn install` command
       - name: yarn build
-        uses: borales/actions-yarn@v2.0.0
+        uses: borales/actions-yarn@v4
         with:
           cmd: build # will run `yarn build` command
       - name: Commit changes

@@ -36,6 +36,9 @@ export interface Job {
   time: number;
   title: string;
   type: "job";
+
+  // This sometimes is empty from the API. It can be populated locally.
+  // Hard-coding it in rendering further below for now.
   url: string;
 }
 
@@ -88,7 +91,7 @@ const StoryComponent = ({ story }: { story: Story }) => {
           +------------------------------------------------------------------+
         </pre>
         <div>
-          <a href={story.url}>{story.title}</a>
+          <a href={"https://news.ycombinator.com/item?id=" + story.id}>{story.title}</a>
         </div>
         <div>
           <a href={"https://news.ycombinator.com/user?id=" + story.by}>
